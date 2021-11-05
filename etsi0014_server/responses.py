@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from pydantic import BaseModel
 
@@ -23,3 +23,7 @@ class Key(BaseModel):
 
 class KeyContainer(BaseModel):
     keys: List[Key]
+
+class Error(BaseModel):
+    message: str
+    details: List[Any]

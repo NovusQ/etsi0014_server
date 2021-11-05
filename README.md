@@ -7,7 +7,7 @@ _DO NOT USE THIS IN PRODUCTION_
 
 
 # Develop
-We use [poetry](https://python-poetry.org/) to develop and maintain this
+We use [poetry](https://python-poetry.org/) to manage dependencies of this
 application.
 
 To get started grab a copy of this source code and clone it.
