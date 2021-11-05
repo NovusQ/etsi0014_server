@@ -14,5 +14,12 @@ To get started grab a copy of this source code and clone it.
 
 To run enter:
 ```bash
-poetry  run uvicorn etsi0014_server.asgi:app --reload
+poetry run uvicorn etsi0014_server.asgi:app --reload
+```
+
+## Unit Tests
+
+To run unit tests simply run the following command
+```bash
+poetry run pytest test
 ```
