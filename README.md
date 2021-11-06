@@ -12,6 +12,11 @@ application.
 
 To get started grab a copy of this source code and clone it.
 
+To fetch dependencies run:
+```bash
+poetry install
+```
+
 To run enter:
 ```bash
 poetry run uvicorn etsi0014_server.asgi:app --reload
