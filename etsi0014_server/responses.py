@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Optional
 
 from pydantic import BaseModel
 
@@ -26,4 +26,4 @@ class KeyContainer(BaseModel):
 
 class Error(BaseModel):
     message: str
-    details: List[Any]
+    details: Optional[List[Any]]

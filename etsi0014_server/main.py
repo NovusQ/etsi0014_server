@@ -1,31 +1,114 @@
-from fastapi import FastAPI
+from os import stat
+from fastapi import FastAPI, Response, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from typing import Union
-from .requests import KeyRequest, KeyIds
+from .keystore import KeyStore
+from .requests import KeyRequest, KeyIds, KeyId
 from .responses import KeyContainer, Error
 
 
 app = FastAPI(title="Mock ETSI0014 API")
+keystore = KeyStore()
 
-@app.post("/api/v1/keys/{slave_SAE_ID}/enc_keys")
-def enc_keys(slave_SAE_ID: str, key_request: KeyRequest):
-    return {}
+"""
+Create 3 pre-calculated keys for use.
+"""
+for i in range(3):
+    keystore.create_symmetric_key("Alice", "Bob")
+    keystore.create_symmetric_key("Bob", "Alice")
+    keystore.create_symmetric_key("Alice", "Charlie")
+    keystore.create_symmetric_key("Charlie", "Alice")
+    keystore.create_symmetric_key("Charlie", "Bob")
+    keystore.create_symmetric_key("Bob", "Charlie")
 
-@app.get("/api/v1/keys/{slave_SAE_ID}/enc_keys")
-def get_enc_keys(slave_SAE_ID: str, number: int, size: int) -> Union[Error, KeyContainer]:
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(Error(message="malformated request"), status_code=400)
+
+@app.post(
+    "/{master_SAE_ID}/api/v1/keys/{slave_SAE_ID}/enc_keys",
+    response_model=Union[KeyContainer, Error],
+    status_code=status.HTTP_200_OK)
+def enc_keys(
+    master_SAE_ID: str,
+    slave_SAE_ID: str,
+    key_request: KeyRequest,
+    response: Response) -> Union[KeyContainer, Error]:
+    
+    number = key_request.number
+    size = key_request.size
+    
+    keys = []
+
+    for _ in range(number):
+    
+        key = keystore.reserve_key(master_SAE_ID, slave_SAE_ID)
+    
+        if isinstance(key, Error):
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            return Error
+    
+        if size != 4096:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            err = Error()
+            err.message = "Only support 4096 bits"
+            return err
+        keys.append(key)
+
+    return KeyContainer(keys=keys)
+
+@app.get(
+    "/{master_SAE_ID}/api/v1/keys/{slave_SAE_ID}/enc_keys",
+    response_model=Union[KeyContainer, Error],
+    status_code=status.HTTP_200_OK)
+def get_enc_keys(
+    master_SAE_ID: str, 
+    slave_SAE_ID: str, 
+    number: int, 
+    size: int, 
+    response: Response) -> Union[KeyContainer, Error]:
+
     if size != 4096:
-        err = Error()
-        err.message = "Only support 4096 bits"
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        err = Error(message = "Only support 4096 bits")
         return err
-    return {}
+    
+    keys = []
+    for _ in range(number):
+        key = keystore.reserve_key(master_SAE_ID, slave_SAE_ID)
+        if isinstance(key, Error):
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            return key
+        keys.append(key)
 
-@app.post("/api/v1/keys/{master_SAE_ID}/dec_keys")
-def dec_keys(master_SAE_ID: str, key_ids: KeyIds):
-    return {}
+    return KeyContainer(keys=keys)
 
-@app.get("/api/v1/keys/{master_SAE_ID}/dec_keys")
-def dec_keys(master_SAE_ID: str, key_ids: KeyIds):
-    return {}
+@app.post(
+    "/{slave_SAE_ID}/api/v1/keys/{master_SAE_ID}/dec_keys",
+    response_model=Union[KeyContainer, Error],
+    status_code=status.HTTP_200_OK)
+def dec_keys(slave_SAE_ID: str, master_SAE_ID: str, key_ids: KeyIds, response: Response):
+    
+    keys = []
+    for key in key_ids.key_ids:
+        res = keystore.get_key(master_SAE_ID, slave_SAE_ID, key)
+        if isinstance(res, Error):
+            response.status_code = status.HTTP_401_UNAUTHORIZED
+            return res
+        keys.append(res)
+    
+    return KeyContainer(keys=keys)
 
-@app.get("/api/v1/keys/{slave_SAE_ID}/status")
-def status(slave_SAE_ID: str):
+@app.get("/{slave_SAE_ID}/api/v1/keys/{master_SAE_ID}/dec_keys")
+def get_dec_keys(slave_SAE_ID: str, master_SAE_ID: str, key_ID: str, response: Response):
+    
+    res = keystore.get_key(master_SAE_ID, slave_SAE_ID, KeyId(key_id = key_ID))
+    if isinstance(res, Error):
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return res
+    return KeyContainer(keys=[res])
+
+@app.get("/{master_SAE_ID}/api/v1/keys/{slave_SAE_ID}/status")
+def get_status(master_SAE_ID: str, slave_SAE_ID: str):
     return {}

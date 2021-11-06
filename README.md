@@ -1,6 +1,6 @@
 # Mock `etsi-0014` Server
 
-This repo contains a mock implementation of the ETSI GS QKD 014 V1.1.1 (2019).
+This repo contains a mock implementation of the [ETSI GS QKD 014 V1.1.1 (2019)](https://www.etsi.org/deliver/etsi_gs/QKD/001_099/014/01.01.01_60/gs_qkd014v010101p.pdf).
 It is meant to be used for testing integration with other parties. 
 
 _DO NOT USE THIS IN PRODUCTION_ 

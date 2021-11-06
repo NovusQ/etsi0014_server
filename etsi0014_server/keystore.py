@@ -14,7 +14,23 @@ class KeyStore:
         self.unallocated_keys = {}
 
     def create_symmetric_key(self, master: str, slave: str, secret = secrets.token_bytes(512)) -> None:
-        """ Called when we want to create a symmetric keystore """
+        """
+        Called when we want to create a symmetric key pair in the key store. 
+        This should be called whenever the quantum link successfully establishes
+        a key pair.
+
+        Parameters
+        ------
+        master: str
+        The master SAE ID
+
+        slave: str
+        The slave SAE ID
+
+        secret: bytes
+        Optional. The bytes to be encoded. If no value is passed, we simulate a
+        random source.
+        """
         key_id = str(uuid.uuid4())
         while key_id in self.keys:
             key_id = str(uuid.uuid4())

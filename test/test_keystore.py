@@ -34,3 +34,7 @@ def test_keystore():
 
     key = keystore.get_key("Bob", "Alice", key_uuid)
     assert(isinstance(key, Error))
+
+    # There should be no more keys to retrieve
+    key = keystore.reserve_key("Alice", "Bob")
+    assert(isinstance(key, Error))
