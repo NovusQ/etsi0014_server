@@ -111,4 +111,4 @@ def get_dec_keys(slave_SAE_ID: str, master_SAE_ID: str, key_ID: str, response: R
 
 @app.get("/{master_SAE_ID}/api/v1/keys/{slave_SAE_ID}/status")
 def get_status(master_SAE_ID: str, slave_SAE_ID: str):
-    return {}
+    return keystore.get_status(master_SAE_ID, slave_SAE_ID)

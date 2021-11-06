@@ -78,14 +78,22 @@ class KeyStore:
         key_uuid = self.unallocated_keys[slave][master].pop()
         return Key(key_ID = key_uuid, key = self.keys[key_uuid])
 
-    def get_status(self, slave: str) -> Union[Status, Error]:
+    def get_status(self, master: str, slave: str) -> Union[Status, Error]:
 
         if slave not in self.owners:
             return Error(message = "slave not found", details = [])
 
-        status = Status() 
-        status.source_KME_ID = ""
-        status.target_KME_ID = ""
-        status.slave_SAE_ID = slave
-
+        status = Status(
+            source_KME_ID = "localhost",
+            target_KME_ID = "localhost",
+            slave_SAE_ID = slave,
+            master_SAE_ID = master,
+            key_size = 4096,
+            stored_key_count = len(self.owners[slave]),
+            max_key_count = 100000000, # Arbitrarily set.
+            max_key_per_request = len(self.unallocated_keys[slave]),
+            max_key_size = 4096,
+            min_key_size = 4096,
+            max_SAE_ID_count = 0
+        )
         return status
