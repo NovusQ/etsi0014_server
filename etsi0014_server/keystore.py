@@ -35,7 +35,7 @@ class KeyStore:
         while key_id in self.keys:
             key_id = str(uuid.uuid4())
 
-        self.keys[key_id] = str(base64.b64encode(secret))
+        self.keys[key_id] = base64.b64encode(secret).decode('utf-8')
         
         if slave not in self.owners:
             self.owners[slave] = {}
