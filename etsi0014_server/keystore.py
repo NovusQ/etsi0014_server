@@ -15,11 +15,11 @@ class KeyStore:
 
     def create_symmetric_key(self, master: str, slave: str, secret = secrets.token_bytes(512)) -> None:
         """ Called when we want to create a symmetric keystore """
-        key_id = uuid.uuid4()
+        key_id = str(uuid.uuid4())
         while key_id in self.keys:
-            key_id = uuid.uuid4()
+            key_id = str(uuid.uuid4())
 
-        self.keys[key_id] = base64.b64encode(secret)
+        self.keys[key_id] = str(base64.b64encode(secret))
         
         if slave not in self.owners:
             self.owners[slave] = {}
@@ -56,19 +56,18 @@ class KeyStore:
         if master not in self.owners[slave]:
             return Error(message = "Master SAE ID has no key pair established with Slave", details = [])
         
+        if len(self.unallocated_keys[slave][master]) == 0:
+            return Error(message = "Key pair generation not ready", details = [])
+        
         key_uuid = self.unallocated_keys[slave][master].pop()
-        key_response = Key()
-        key_response.key_ID = key_uuid
-        key_response.key = self.keys[key_uuid]
-
-        return master
+        return Key(key_ID = key_uuid, key = self.keys[key_uuid])
 
     def get_status(self, slave: str) -> Union[Status, Error]:
 
         if slave not in self.owners:
-            return Error(message = "slave not found")
+            return Error(message = "slave not found", details = [])
 
-        status = Status()
+        status = Status() 
         status.source_KME_ID = ""
         status.target_KME_ID = ""
         status.slave_SAE_ID = slave
