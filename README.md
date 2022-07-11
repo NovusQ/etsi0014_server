@@ -22,6 +22,10 @@ To run enter:
 poetry run uvicorn etsi0014_server.asgi:app --reload
 ```
 
+## Docs
+
+Once running you can access the OpenAPI docs at `localhost:8080/docs`.
+
 ## Unit Tests
 
 To run unit tests simply run the following command
